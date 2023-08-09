@@ -1,13 +1,15 @@
 package com.example.demo.service;
 
 
+import com.example.demo.dto.RequestDto;
+import com.example.demo.dto.ResponseDto;
 import com.example.demo.entity.Book;
 import com.example.demo.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -15,20 +17,34 @@ public class BookServiceImpl implements BookService {
     @Autowired
     BookRepository bookRepository;
     @Override
-    public Book createBook(Book newbook) {
+    public ResponseDto createBook(RequestDto bookDto) {
+        Book newbook = new Book();
+        newbook.setBookName(bookDto.getName());
+        newbook.setAuthorName(bookDto.getAuthor());
+        newbook.setDescription(bookDto.getDescription());
+        newbook.setPrice(bookDto.getPrice());
         bookRepository.save(newbook);
-        return newbook;
+        ResponseDto dto = new ResponseDto();
+        dto.setId(newbook.getId());
+        dto.setName(newbook.getBookName());
+        dto.setDescription(newbook.getDescription());
+        dto.setAuthor(newbook.getAuthorName());
+        dto.setPrice(newbook.getPrice());
+        return dto;
     }
 
     @Override
-    public Book updateBook(int id, Book oldbook) {
+    public ResponseDto updateBook(int id, RequestDto book) {
         if(bookRepository.existsById(id)){
+            Book oldbook = bookRepository.findById(id).get();
             oldbook.setId(id);
-            oldbook.setBookName(oldbook.getBookName());
-            oldbook.setAuthorName(oldbook.getAuthorName());
-            oldbook.setDescription(oldbook.getDescription());
-            oldbook.setPrice(oldbook.getPrice());
-            return bookRepository.save(oldbook);
+            oldbook.setBookName(book.getName());
+            oldbook.setAuthorName(book.getAuthor());
+            oldbook.setDescription(book.getDescription());
+            oldbook.setPrice(book.getPrice());
+            Book newbook = bookRepository.save(oldbook);
+            return new ResponseDto(id, newbook.getBookName(), newbook.getAuthorName(), newbook.getDescription(),
+                    newbook.getPrice());
         }
         return null;
     }
@@ -39,8 +55,18 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<Book> getAllBooks() {
+    public List<ResponseDto> getAllBooks() {
         List<Book> books = bookRepository.findAll();
-        return books;
+        return books.stream()
+                .map(this::convertentitytoDTO).collect(Collectors.toList());
+    }
+    public ResponseDto convertentitytoDTO(Book book){
+        ResponseDto dto = new ResponseDto();
+        dto.setId(book.getId());
+        dto.setName(book.getBookName());
+        dto.setAuthor(book.getAuthorName());
+        dto.setDescription(book.getDescription());
+        dto.setPrice(book.getPrice());
+        return dto;
     }
 }

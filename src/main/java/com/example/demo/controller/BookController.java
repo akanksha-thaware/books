@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.RequestDto;
+import com.example.demo.dto.ResponseDto;
 import com.example.demo.entity.Book;
 import com.example.demo.service.BookService;
 import lombok.Data;
@@ -18,16 +20,16 @@ public class BookController {
 
     @GetMapping("/")
 
-    public List<Book> getAllBooks(){
+    public List<ResponseDto> getAllBooks(){
         return bookService.getAllBooks();
     }
     @PostMapping("/")
-            public Book createBook(@RequestBody Book book){
+            public ResponseDto createBook(@RequestBody RequestDto book){
        return bookService.createBook(book);
     }
 
     @PutMapping("/")
-        public Book updateBook(@RequestParam int id, @RequestBody Book book){
+        public ResponseDto updateBook(@RequestParam int id, @RequestBody RequestDto book){
             return bookService.updateBook(id, book);
         }
 
