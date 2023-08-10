@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 
 public class Book {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
 
     @Column(name = "book_name")

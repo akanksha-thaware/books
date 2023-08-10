@@ -1,11 +1,9 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.RequestDto;
-import com.example.demo.dto.ResponseDto;
-import com.example.demo.entity.Book;
+import com.example.demo.dto.BookRequestDTO;
+import com.example.demo.dto.BookResponseDTO;
 import com.example.demo.service.BookService;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,19 +17,19 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping("/")
-
-    public List<ResponseDto> getAllBooks(){
+    public List<BookResponseDTO> getAllBooks(){
         return bookService.getAllBooks();
     }
+
     @PostMapping("/")
-            public ResponseDto createBook(@RequestBody RequestDto book){
+    public BookResponseDTO createBook(@RequestBody BookRequestDTO book){
        return bookService.createBook(book);
     }
 
     @PutMapping("/")
-        public ResponseDto updateBook(@RequestParam int id, @RequestBody RequestDto book){
-            return bookService.updateBook(id, book);
-        }
+    public BookResponseDTO updateBook(@RequestParam int id, @RequestBody BookRequestDTO book){
+        return bookService.updateBook(id, book);
+    }
 
     @DeleteMapping("/")
     public void deleteBookById(@RequestParam int id){

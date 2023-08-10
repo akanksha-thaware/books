@@ -1,10 +1,12 @@
 package com.example.demo.service;
 
 
-import com.example.demo.dto.RequestDto;
-import com.example.demo.dto.ResponseDto;
+import com.example.demo.dto.BookRequestDTO;
+import com.example.demo.dto.BookResponseDTO;
 import com.example.demo.entity.Book;
 import com.example.demo.repository.BookRepository;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,36 +17,43 @@ import java.util.stream.Collectors;
 public class BookServiceImpl implements BookService {
 
     @Autowired
+    private ModelMapper modelMapper;
+    @Autowired
     BookRepository bookRepository;
-    @Override
-    public ResponseDto createBook(RequestDto bookDto) {
-        Book newbook = new Book();
-        newbook.setBookName(bookDto.getName());
-        newbook.setAuthorName(bookDto.getAuthor());
-        newbook.setDescription(bookDto.getDescription());
-        newbook.setPrice(bookDto.getPrice());
-        bookRepository.save(newbook);
-        ResponseDto dto = new ResponseDto();
-        dto.setId(newbook.getId());
-        dto.setName(newbook.getBookName());
-        dto.setDescription(newbook.getDescription());
-        dto.setAuthor(newbook.getAuthorName());
-        dto.setPrice(newbook.getPrice());
-        return dto;
+
+    @Autowired
+    public BookServiceImpl(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+        modelMapper.addMappings(new PropertyMap<BookRequestDTO, Book>() {
+            @Override
+            protected void configure() {
+                map().setBookName(source.getName());
+                map().setAuthorName(source.getAuthor());
+            }
+        });
+        modelMapper.addMappings(new PropertyMap<Book, BookResponseDTO>() {
+            @Override
+            protected void configure() {
+                map().setName(source.getBookName());
+                map().setAuthor(source.getAuthorName());
+            }
+        });
     }
 
     @Override
-    public ResponseDto updateBook(int id, RequestDto book) {
+    public BookResponseDTO createBook(BookRequestDTO bookDto) {
+        Book newbook = modelMapper.map(bookDto, Book.class);
+        bookRepository.save(newbook);
+        return modelMapper.map(newbook, BookResponseDTO.class);
+    }
+
+    @Override
+    public BookResponseDTO updateBook(int id, BookRequestDTO bookDto) {
         if(bookRepository.existsById(id)){
-            Book oldbook = bookRepository.findById(id).get();
-            oldbook.setId(id);
-            oldbook.setBookName(book.getName());
-            oldbook.setAuthorName(book.getAuthor());
-            oldbook.setDescription(book.getDescription());
-            oldbook.setPrice(book.getPrice());
-            Book newbook = bookRepository.save(oldbook);
-            return new ResponseDto(id, newbook.getBookName(), newbook.getAuthorName(), newbook.getDescription(),
-                    newbook.getPrice());
+            Book newbook = modelMapper.map(bookDto, Book.class);
+            newbook.setId(id);
+            bookRepository.save(newbook);
+            return modelMapper.map(newbook, BookResponseDTO.class);
         }
         return null;
     }
@@ -55,18 +64,13 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<ResponseDto> getAllBooks() {
+    public List<BookResponseDTO> getAllBooks() {
         List<Book> books = bookRepository.findAll();
         return books.stream()
-                .map(this::convertentitytoDTO).collect(Collectors.toList());
+                .map(this::convertEntityToDTO).collect(Collectors.toList());
+
     }
-    public ResponseDto convertentitytoDTO(Book book){
-        ResponseDto dto = new ResponseDto();
-        dto.setId(book.getId());
-        dto.setName(book.getBookName());
-        dto.setAuthor(book.getAuthorName());
-        dto.setDescription(book.getDescription());
-        dto.setPrice(book.getPrice());
-        return dto;
+    public BookResponseDTO convertEntityToDTO(Book book){
+        return modelMapper.map(book, BookResponseDTO.class);
     }
 }
